@@ -1,0 +1,40 @@
+Notes to Editors:
+
+Primary Goal:
+Create a simple, easy-to-use program that writes a Java program skeleton, including JavaDocs
+
+To do:
+* Give the Writer class functionality for making custom constructors
+* Write a JFrame, similar to the makeField JFrame, for making custom constructors
+
+Suggestions:
+* Find a way to cut down on the number of fields in the two classes
+* Clean up the coding of GUI elements
+* Remove CLI functionality from the Writer class (getInfo() method and Scanner)
+* A possible idea of a branch-off: a program that auto-writes a standard five-paragraph essay
+
+Explanations:
+* Many parts of the constructor functionality already exists in the GUI and Writer classes
+* The commented out lines in the constructor of the GUI are there for a future release which will include the feature of the using adding custom constructors
+* The cNumField.setText("0") line in the constructor will be necessary until constructor functionality is added
+
+Version Number Explanation:
+The first number is the version number
+The second number is the release number
+The third number is the update number
+
+Each class is assigned its own version number as is the program as a whole. The version of the program as a whole is found in the README.TXT file
+
+So, if the version number was 1.25.3 that would mean that the current version is 1, the current release was numbered 25, and there have been 3 updates
+
+The version number only changes if there has been a large improvement to both the code and interface
+The release number is more arbitrary than the version or update number and simply reflects how large of a change there is between the current release and the previous
+The update number increases by one every time that a new update is posted
+
+A letter may also appear after the numbers, in which case it has this meaning:
+*An "a" means "alpha release"
+*A "b" means "beta release"
+*An "rc" means "release candidate"
+
+Contact Info:
+If you wish to contact me, my e-mail is johnred32@gmail.com
