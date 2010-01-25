@@ -6,8 +6,8 @@ import java.io.File;
 /**
  * GUI front-end for the Writer class
  * 
- * @author Jason Mey
- * @version 1.30.5, 12/10/2009
+ * @author Jason Mey, Matthew Levandowski
+ * @version 1.30.5, 01/24/2010
  */
 public class GUI {
     
