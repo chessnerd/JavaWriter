@@ -5,7 +5,7 @@ import javax.swing.JOptionPane;
  * Writes a skeleton of a Java class given a set of information
  * 
  * @author Jason Mey, Matthew Levandowski
- * @version 1.70.3, 01/24/2010
+ * @version 1.75.0, 01/24/2010
  */
 public class Writer {
 
@@ -54,12 +54,17 @@ public class Writer {
 	/** Stores the names of the fields for the class */
 	private String[] fieldNames;
 
+	/** Stores the fields to be used in the constructor */
+	private String[][] includedFields;
+	
+	/** Stores the field types to be used in the constructor */
+	private String[][] includedFieldTypes;
+
 	/** Whether the field has a getter method */
 	private boolean[] fieldGet;
 
 	/** Whether the field has a setter method */
 	private boolean[] fieldSet;
-
 
 	/**
 	 * Constructor for the Writer class
@@ -70,7 +75,6 @@ public class Writer {
 		pathNotSet = true;
 		needsMain = false;
 	}
-
 
 	/**
 	 * Sets the arrays for the fields
@@ -89,7 +93,6 @@ public class Writer {
 		pubPri = new String[fieldNum];
 	}
 
-
 	/**
 	 * Capitalizes a String
 	 * 
@@ -97,7 +100,7 @@ public class Writer {
 	 *            - the String to be capitalized
 	 * @return - the capitalized String
 	 */
-	public String capitalize(String s) {
+	public static String capitalize(String s) {
 		String capString = "";
 		for (int i = 0; i < s.length(); i++) {
 			String letter = "" + s.charAt(i);
@@ -109,24 +112,24 @@ public class Writer {
 		return capString;
 	}
 
-
 	/**
-	 * A method that takes a multi-word field name and splits it into
-	 * separate words broken up by spaces
+	 * A method that takes a multi-word field name and splits it into separate
+	 * words broken up by spaces
 	 */
-	public String splitFieldName(String s) {
+	public static String splitFieldName(String s) {
 		String splitString = "";
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
+
 			// If any two letters in a row are uppercase, return the
 			// original String
 			if (Character.isUpperCase(c)
 					&& Character.isUpperCase(s.charAt(i + 1))) {
 				return s;
 			}
+
 			if (i != 0 && Character.isUpperCase(c)) {
-				splitString = splitString + " "
-						+ Character.toLowerCase(c);
+				splitString = splitString + " " + Character.toLowerCase(c);
 			} else if (i == 0 && Character.isUpperCase(c)) {
 				splitString = splitString + Character.toLowerCase(c);
 			} else {
@@ -135,7 +138,6 @@ public class Writer {
 		}
 		return splitString;
 	}
-
 
 	/**
 	 * Tests if the file will write
@@ -164,19 +166,17 @@ public class Writer {
 		}
 		if (hasError) {
 			JOptionPane.showMessageDialog(null, "Path " + filePath2
-					+ " is not a writable location",
-					"File Creation Failed", JOptionPane.ERROR_MESSAGE);
+					+ " is not a writable location", "File Creation Failed",
+					JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 		if (printer == null) {
-			JOptionPane.showMessageDialog(null,
-					"Unknown error has occurred", "Unknown Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Unknown error has occurred",
+					"Unknown Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
 		}
 		return true;
 	}
-
 
 	/**
 	 * Writes the class to a file
@@ -206,19 +206,19 @@ public class Writer {
 
 		// Checks if any errors occurred
 		if (hasError) {
-			JOptionPane.showMessageDialog(null,
-					"Could not create file at " + filePath,
-					"File Creation Failed", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Could not create file at "
+					+ filePath, "File Creation Failed",
+					JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
 		}
 		if (printer == null) {
-			JOptionPane.showMessageDialog(null,
-					"Unknown error has occurred", "Unknown Error",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Unknown error has occurred",
+					"Unknown Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
 		}
 
 		// Prints the file
+
 		// Start of the class
 		printer.println("");
 		printer.println("/**");
@@ -237,19 +237,62 @@ public class Writer {
 						+ splitFieldName(className) + " "
 						+ splitFieldName(fieldNames[i]) + "*/");
 			} else {
-				printer.println("    /** The "
-						+ splitFieldName(fieldNames[i]) + " of the "
-						+ splitFieldName(className) + " */");
+				printer.println("    /** The " + splitFieldName(fieldNames[i])
+						+ " of the " + splitFieldName(className) + " */");
 			}
 			printer.println("    " + pubPri[i] + stat[i] + fin[i]
 					+ fieldTypes[i] + " " + fieldNames[i] + ";");
 			printer.println("    ");
 		}
 
+		// Custom Constructors
+		for (int i = 0; i < conNum; i++) {
+			// Constructor's JavaDocs
+			printer.println("    /**");
+			printer.println("     * Constructor for " + className + " objects");
+			printer.println("     */");
+			for (int j = 0; j < includedFields[i].length; j++) {
+				if (includedFields[j].equals("boolean")) {
+					printer.println("     * @param p"
+							+ capitalize(includedFields[i][j]) + " whether the "
+							+ splitFieldName(className) + " "
+							+ splitFieldName(includedFields[i][j]));
+				} else {
+					printer.println("     * @param p"
+							+ capitalize(includedFields[i][j]) + " the "
+							+ splitFieldName(includedFields[i][j]) + " of the "
+							+ splitFieldName(className) + "");
+				}
+			}
+			printer.println("     */");
+
+			// Constructor's signature
+			for (int j = 0; j < includedFields[i].length; j++) {
+				if (j > 0) {
+					printer.print(", " + includedFieldTypes[i][j] + " p"
+							+ capitalize(includedFields[i][j]));
+				} else {
+					printer.print(includedFieldTypes[i][j] + " p"
+							+ capitalize(includedFields[i][j]));
+				}
+			}
+			printer.println(") {");
+			
+			// Constructor's code
+			for (int j = 0; j < includedFields[i].length; j++) {
+				printer.println("        " + includedFields[i][j] + " = p"
+						+ capitalize(includedFields[i][j]) + ";");
+			}
+			printer.println("    }");
+			printer.println("    ");
+		}
+		
+		/* The blank and full constructor should remain until 
+		full custom constructor support has been added */
+		
 		// Blank Constructor
 		printer.println("    /**");
-		printer.println("     * Constructor for " + className
-				+ " objects");
+		printer.println("     * Constructor for " + className + " objects");
 		printer.println("     */");
 		printer.println("    public " + className + "() {");
 		printer.println("        ");
@@ -258,39 +301,37 @@ public class Writer {
 
 		// Full Constructor
 		printer.println("    /**");
-		printer.println("     * Constructor for " + className
-				+ " objects");
+		printer.println("     * Constructor for " + className + " objects");
 		printer.println("     * ");
 		for (int i = 0; i < fieldNames.length; i++) {
 			if (fin[i].equals("final ")) {
 				// Do nothing
 			} else if (fieldTypes[i].equals("boolean")) {
-				printer.println("     * @param p"
-						+ capitalize(fieldNames[i]) + " whether the "
-						+ splitFieldName(className) + " "
+				printer.println("     * @param p" + capitalize(fieldNames[i])
+						+ " whether the " + splitFieldName(className) + " "
 						+ splitFieldName(fieldNames[i]));
 			} else {
-				printer.println("     * @param p"
-						+ capitalize(fieldNames[i]) + " the "
-						+ splitFieldName(fieldNames[i]) + " of the "
+				printer.println("     * @param p" + capitalize(fieldNames[i])
+						+ " the " + splitFieldName(fieldNames[i]) + " of the "
 						+ splitFieldName(className) + "");
 			}
 		}
 		printer.println("     */");
 		printer.print("    public " + className + "(");
-		boolean hasBeenNonFinal = false;
+		boolean isThisFinal = false;
+		boolean hasBeenFinal = true;
 		for (int i = 0; i < fieldNames.length; i++) {
 			if (fin[i].equals("")) {
-				hasBeenNonFinal = true;
+				isThisFinal = true;
 			}
 			if (fin[i].equals("final ")) {
-				// Do nothing
-			} else if (i > 0 && hasBeenNonFinal) {
+				
+			} else if (i > 0 && isThisFinal && !hasBeenFinal) {
 				printer.print(", " + fieldTypes[i] + " p"
 						+ capitalize(fieldNames[i]));
 			} else {
-				printer.print(fieldTypes[i] + " p"
-						+ capitalize(fieldNames[i]));
+				printer.print(fieldTypes[i] + " p" + capitalize(fieldNames[i]));
+				hasBeenFinal = false;
 			}
 		}
 		printer.println(") {");
@@ -310,8 +351,7 @@ public class Writer {
 			printer.println("    /**");
 			printer.println("     * The main method");
 			printer.println("     */");
-			printer
-					.println("    public static void main(String[] args) {");
+			printer.println("    public static void main(String[] args) {");
 			printer.println("        ");
 			printer.println("    }");
 			printer.println("    ");
@@ -330,9 +370,7 @@ public class Writer {
 				printer.println("     */");
 				printer.println("    public " + stat[i] + fieldTypes[i]
 						+ " get" + capitalize(fieldNames[i]) + "(){");
-				printer
-						.println("        return " + fieldNames[i]
-								+ ";");
+				printer.println("        return " + fieldNames[i] + ";");
 				printer.println("    }");
 				printer.println("    ");
 			}
@@ -341,16 +379,14 @@ public class Writer {
 				printer.println("     * Mutator method for the "
 						+ fieldNames[i] + " field");
 				printer.println("     * ");
-				printer.println("     * @param p"
-						+ capitalize(fieldNames[i]) + " takes a new "
-						+ fieldTypes[i] + " for the "
+				printer.println("     * @param p" + capitalize(fieldNames[i])
+						+ " takes a new " + fieldTypes[i] + " for the "
 						+ splitFieldName(className) + "'s "
 						+ splitFieldName(fieldNames[i]));
 				printer.println("     */");
 				printer.println("    public " + stat[i] + "void set"
-						+ capitalize(fieldNames[i]) + "("
-						+ fieldTypes[i] + " p"
-						+ capitalize(fieldNames[i]) + "){");
+						+ capitalize(fieldNames[i]) + "(" + fieldTypes[i]
+						+ " p" + capitalize(fieldNames[i]) + "){");
 				printer.println("        " + fieldNames[i] + " = p"
 						+ capitalize(fieldNames[i]) + ";");
 				printer.println("    }");
@@ -363,11 +399,9 @@ public class Writer {
 		printer.close();
 
 		// Display success message
-		JOptionPane.showMessageDialog(null,
-				"File successfully created at " + filePath,
-				"File Creation", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "File successfully created at "
+				+ filePath, "File Creation", JOptionPane.INFORMATION_MESSAGE);
 	}
-
 
 	/**
 	 * Accessor method for the fileName field
@@ -377,7 +411,6 @@ public class Writer {
 	public String getFileName() {
 		return fileName;
 	}
-
 
 	/**
 	 * Mutator method for the fileName field
@@ -389,7 +422,6 @@ public class Writer {
 		fileName = pFileName;
 	}
 
-
 	/**
 	 * Mutator method for the path field
 	 * 
@@ -399,8 +431,7 @@ public class Writer {
 	public void setPath(String pPath) {
 		path = pPath;
 		// Check to make sure that the directory path ends with a slash
-		if (System.getProperty("os.name").toLowerCase().contains(
-				"windows")) {
+		if (System.getProperty("os.name").toLowerCase().contains("windows")) {
 			if (path.charAt(path.length() - 1) != '\\') {
 				path = path + '\\';
 			}
@@ -412,7 +443,6 @@ public class Writer {
 		pathNotSet = false;
 	}
 
-
 	/**
 	 * Accessor method for the name field
 	 * 
@@ -421,7 +451,6 @@ public class Writer {
 	public String getName() {
 		return name;
 	}
-
 
 	/**
 	 * Mutator method for the name field
@@ -432,7 +461,6 @@ public class Writer {
 	public void setName(String pName) {
 		name = pName;
 	}
-
 
 	/**
 	 * Changes whether the file needs a main method
@@ -445,7 +473,6 @@ public class Writer {
 		}
 	}
 
-
 	/**
 	 * Accessor method for the date field
 	 * 
@@ -454,7 +481,6 @@ public class Writer {
 	public String getDate() {
 		return date;
 	}
-
 
 	/**
 	 * Mutator method for the date field
@@ -466,7 +492,6 @@ public class Writer {
 		date = pDate;
 	}
 
-
 	/**
 	 * Accessor method for the className field
 	 * 
@@ -475,7 +500,6 @@ public class Writer {
 	public String getClassName() {
 		return className;
 	}
-
 
 	/**
 	 * Mutator method for the className field
@@ -487,7 +511,6 @@ public class Writer {
 		className = pClassName;
 	}
 
-
 	/**
 	 * Accessor method for the fieldNum field
 	 * 
@@ -496,7 +519,6 @@ public class Writer {
 	public int getFieldNum() {
 		return fieldNum;
 	}
-
 
 	/**
 	 * Accessor method for the conNum field
@@ -507,7 +529,6 @@ public class Writer {
 		return conNum;
 	}
 
-
 	/**
 	 * Mutator method for the conNum field
 	 * 
@@ -517,7 +538,6 @@ public class Writer {
 	public void setConNum(int pConNum) {
 		conNum = pConNum;
 	}
-
 
 	/**
 	 * Makes the current field private or public
@@ -535,7 +555,6 @@ public class Writer {
 		}
 	}
 
-
 	/**
 	 * Makes the current field static
 	 * 
@@ -551,7 +570,6 @@ public class Writer {
 			stat[i] = "";
 		}
 	}
-
 
 	/**
 	 * Makes the current field final
@@ -569,6 +587,15 @@ public class Writer {
 		}
 	}
 
+	/**
+	 * Whether or not the specified field is set to final
+	 * 
+	 * @param i
+	 *            the field being checked for
+	 */
+	public boolean isFinal(int i) {
+		return fin[i].equals("final ");
+	}
 
 	/**
 	 * Accessor method for the pubPri field
@@ -579,7 +606,6 @@ public class Writer {
 		return pubPri;
 	}
 
-
 	/**
 	 * Accessor method for the fieldTypes field
 	 * 
@@ -588,7 +614,6 @@ public class Writer {
 	public String[] getFieldTypes() {
 		return fieldTypes;
 	}
-
 
 	/**
 	 * Accessor method for the fieldNames field
@@ -599,6 +624,14 @@ public class Writer {
 		return fieldNames;
 	}
 
+	/**
+	 * Accessor method for the includedFields field
+	 * 
+	 * @return gives the array of fields included in the constructor
+	 */
+	public String[][] getIncludedFields() {
+		return includedFields;
+	}
 
 	/**
 	 * Accessor method for the fieldGet field
@@ -608,7 +641,6 @@ public class Writer {
 	public boolean[] getFieldGet() {
 		return fieldGet;
 	}
-
 
 	/**
 	 * Accessor method for the fieldSet field

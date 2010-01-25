@@ -1,13 +1,13 @@
 PROJECT TITLE: Java Writer
 PURPOSE OF PROJECT: Create a program that writes intelligent program skeletons
-VERSION: Version 1.45.0
-DATE: 12/10/09
+VERSION: Version 1.45.1
+DATE: 01/24/10
 
 HOW TO START THIS PROJECT:
  Execute the .jar file
 
-AUTHOR:
- Jason Mey
+AUTHORS:
+ Jason Mey and Matthew Levandowski
 
 USER INSTRUCTIONS:
  Wherever you place the .jar file for this program is the same folder that the source file will be written to, unless you change the destination folder using File>Choose Path...
